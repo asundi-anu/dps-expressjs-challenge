@@ -48,15 +48,14 @@ router.get('/repeated-words', (req: Request, res: Response) => {
 // Create Report
 router.post('/', (req: Request, res: Response) => {
 	try {
-		const { id, title, text, project_id } = req.body;
+		const { id, text, project_id } = req.body;
 
-		if (!id || !title || !project_id) {
+		if (!id || !text || !project_id) {
 			return res
 				.status(400)
-				.json({ error: 'id, title, and project_id are required' });
+				.json({ error: 'id, text, and project_id are required' });
 		}
 
-		// Check for duplicate id
 		const existing = db.query('SELECT id FROM reports WHERE id = @id', {
 			id,
 		});
@@ -67,8 +66,8 @@ router.post('/', (req: Request, res: Response) => {
 		}
 
 		db.run(
-			'INSERT INTO reports (id, title, text, project_id) VALUES (@id, @title, @text, @project_id)',
-			{ id, title, text, project_id },
+			'INSERT INTO reports (id, text, project_id) VALUES (@id, @text, @project_id)',
+			{ id, text, project_id },
 		);
 
 		res.status(201).json({ id });
@@ -109,16 +108,18 @@ router.get('/:id', (req: Request, res: Response) => {
 // Update Report
 router.put('/:id', (req: Request, res: Response) => {
 	try {
-		const { title, text } = req.body;
+		const { text, project_id } = req.body;
 		const { id } = req.params;
 
-		if (!title) {
-			return res.status(400).json({ error: 'Title is required' });
+		if (!text || !project_id) {
+			return res
+				.status(400)
+				.json({ error: 'text and project_id are required' });
 		}
 
 		const result = db.run(
-			'UPDATE reports SET title = @title, text = @text WHERE id = @id',
-			{ id, title, text },
+			'UPDATE reports SET text = @text, project_id = @project_id WHERE id = @id',
+			{ id, text, project_id },
 		);
 
 		if (result.changes === 0) {
